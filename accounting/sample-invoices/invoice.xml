@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice>
+    <invoiceNumber>INV-2024-006</invoiceNumber>
+    <date>2024-02-05</date>
+    <dueDate>2024-03-05</dueDate>
+    <vendor>Software Development Co.</vendor>
+    <customer>Tech Startup</customer>
+    <items>
+        <item>
+            <description>Mobile App Development</description>
+            <quantity>1</quantity>
+            <unitPrice>8000.00</unitPrice>
+            <total>8000.00</total>
+        </item>
+        <item>
+            <description>API Integration</description>
+            <quantity>1</quantity>
+            <unitPrice>2000.00</unitPrice>
+            <total>2000.00</total>
+        </item>
+    </items>
+    <subtotal>10000.00</subtotal>
+    <tax>1000.00</tax>
+    <totalAmount>11000.00</totalAmount>
+    <currency>USD</currency>
+    <status>pending</status>
+    <notes>Custom mobile application with third-party integrations</notes>
+</invoice> 
