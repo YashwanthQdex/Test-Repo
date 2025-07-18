@@ -62,6 +62,7 @@ class TestCalculator {
 const calculator = new TestCalculator();
 console.log('Calculator initialized for webhook testing');
 
+
 // Test basic operations
 console.log('Testing addition:', calculator.add(5, 3));
 console.log('Testing multiplication:', calculator.multiply(4, 7));

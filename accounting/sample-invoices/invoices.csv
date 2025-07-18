@@ -1,5 +1,0 @@
-invoice_number,date,due_date,vendor,customer,subtotal,tax,total_amount,currency,status,notes
-INV-2024-002,2024-01-20,2024-02-20,Office Supplies Co.,XYZ Ltd.,1500.00,150.00,1650.00,USD,pending,Office supplies for Q1
-INV-2024-003,2024-01-25,2024-02-25,Marketing Agency,Startup Inc.,3000.00,300.00,3300.00,USD,paid,Campaign design and execution
-INV-2024-004,2024-01-30,2024-02-30,Cloud Services,Enterprise Corp.,5000.00,500.00,5500.00,USD,pending,Monthly cloud hosting fees
-INV-2024-005,2024-02-01,2024-03-01,Consulting Firm,Small Business LLC,2000.00,200.00,2200.00,USD,pending,Business strategy consultation 
