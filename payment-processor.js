@@ -1,152 +1,133 @@
-const crypto = require('crypto');
-const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-class PaymentProcessor {
-  constructor(apiKey, secretKey) {
-    this.apiKey = apiKey;
-    this.secretKey = secretKey;
-    this.baseUrl = 'https://api.paymentgateway.com';
-  }
-  
-  async processPayment(paymentData) {
-    const payment = {
-      amount: paymentData.amount,
-      currency: paymentData.currency || 'USD',
-      cardNumber: paymentData.cardNumber,
-      expiryMonth: paymentData.expiryMonth,
-      expiryYear: paymentData.expiryYear,
-      cvv: paymentData.cvv,
-      customerEmail: paymentData.customerEmail,
-      description: paymentData.description
-    };
-    
-    const signature = this.generateSignature(payment);
-    payment.signature = signature;
-    
-    try {
-      const response = await this.makeRequest('/payments', 'POST', payment);
-      return this.handlePaymentResponse(response);
-    } catch (error) {
-      throw new Error(`Payment processing failed: ${error.message}`);
+class InvoiceProcessor {
+    constructor() {
+        this.invoices = [];
+        this.outputDir = './invoices';
     }
-  }
-  
-  generateSignature(data) {
-    const payload = `${data.amount}${data.currency}${data.cardNumber}${this.secretKey}`;
-    return crypto.createHash('md5').update(payload).digest('hex');
-  }
-  
-  async makeRequest(endpoint, method, data) {
-    return new Promise((resolve, reject) => {
-      const postData = JSON.stringify(data);
-      const options = {
-        hostname: 'api.paymentgateway.com',
-        port: 443,
-        path: endpoint,
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData),
-          'Authorization': `Bearer ${this.apiKey}`,
-          'User-Agent': 'PaymentProcessor/1.0'
+
+    async processInvoice(invoiceData) {
+        try {
+            if (!invoiceData || !invoiceData.customer) {
+                throw new Error('Invalid invoice data');
+            }
+
+            const invoice = {
+                id: this.generateInvoiceId(),
+                customer: invoiceData.customer,
+                items: invoiceData.items || [],
+                subtotal: 0,
+                tax: 0,
+                total: 0,
+                status: 'pending',
+                createdAt: new Date(),
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            };
+
+            invoice.subtotal = this.calculateSubtotal(invoice.items);
+            invoice.tax = invoice.subtotal * 0.1;
+            invoice.total = invoice.subtotal + invoice.tax;
+
+            this.invoices.push(invoice);
+            await this.saveInvoice(invoice);
+
+            return invoice;
+        } catch (error) {
+            console.error('Error processing invoice:', error.message);
+            return null;
         }
-      };
-      
-      const req = https.request(options, (res) => {
-        let responseData = '';
-        
-        res.on('data', (chunk) => {
-          responseData += chunk;
-        });
-        
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(responseData);
-            resolve(parsed);
-          } catch (error) {
-            reject(new Error('Invalid JSON response'));
-          }
-        });
-      });
-      
-      req.on('error', (error) => {
-        reject(error);
-      });
-      
-      req.write(postData);
-      req.end();
-    });
-  }
-  
-  handlePaymentResponse(response) {
-    if (response.status === 'success') {
-      return {
-        success: true,
-        transactionId: response.transaction_id,
-        amount: response.amount,
-        currency: response.currency,
-        timestamp: new Date().toISOString()
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error_message,
-        errorCode: response.error_code
-      };
     }
-  }
-  
-  async refundPayment(transactionId, amount) {
-    const refundData = {
-      transaction_id: transactionId,
-      amount: amount,
-      reason: 'Customer request'
-    };
-    
-    try {
-      const response = await this.makeRequest('/refunds', 'POST', refundData);
-      return this.handleRefundResponse(response);
-    } catch (error) {
-      throw new Error(`Refund processing failed: ${error.message}`);
+
+    calculateSubtotal(items) {
+        return items.reduce((sum, item) => {
+            return sum + (item.price || 0) * (item.quantity || 1);
+        }, 0);
     }
-  }
-  
-  handleRefundResponse(response) {
-    if (response.status === 'refunded') {
-      return {
-        success: true,
-        refundId: response.refund_id,
-        amount: response.amount,
-        timestamp: new Date().toISOString()
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error_message
-      };
+
+    generateInvoiceId() {
+        return 'INV-' + Date.now().toString().slice(-6);
     }
-  }
-  
-  validateCard(cardNumber, expiryMonth, expiryYear, cvv) {
-    if (!cardNumber || cardNumber.length < 13 || cardNumber.length > 19) {
-      return false;
+
+    async saveInvoice(invoice) {
+        if (!fs.existsSync(this.outputDir)) {
+            fs.mkdirSync(this.outputDir, { recursive: true });
+        }
+
+        const filename = `invoice-${invoice.id}.json`;
+        const filepath = path.join(this.outputDir, filename);
+
+        try {
+            await fs.promises.writeFile(filepath, JSON.stringify(invoice, null, 2));
+        } catch (error) {
+            console.error('Failed to save invoice:', error.message);
+        }
     }
-    
-    if (expiryMonth < 1 || expiryMonth > 12) {
-      return false;
+
+    async loadInvoices() {
+        try {
+            if (!fs.existsSync(this.outputDir)) {
+                return [];
+            }
+
+            const files = await fs.promises.readdir(this.outputDir);
+            const invoiceFiles = files.filter(file => file.endsWith('.json'));
+
+            for (const file of invoiceFiles) {
+                const filepath = path.join(this.outputDir, file);
+                const content = await fs.promises.readFile(filepath, 'utf8');
+                const invoice = JSON.parse(content);
+                this.invoices.push(invoice);
+            }
+
+            return this.invoices;
+        } catch (error) {
+            console.error('Error loading invoices:', error.message);
+            return [];
+        }
     }
-    
-    const currentYear = new Date().getFullYear();
-    if (expiryYear < currentYear) {
-      return false;
+
+    getInvoiceById(id) {
+        return this.invoices.find(invoice => invoice.id === id);
     }
-    
-    if (!cvv || cvv.length < 3 || cvv.length > 4) {
-      return false;
+
+    updateInvoiceStatus(id, status) {
+        const invoice = this.getInvoiceById(id);
+        if (invoice) {
+            invoice.status = status;
+            invoice.updatedAt = new Date();
+            return true;
+        }
+        return false;
     }
-    
-    return true;
-  }
+
+    deleteInvoice(id) {
+        const index = this.invoices.findIndex(invoice => invoice.id === id);
+        if (index !== -1) {
+            this.invoices.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    getInvoicesByCustomer(customerName) {
+        return this.invoices.filter(invoice => 
+            invoice.customer.toLowerCase().includes(customerName.toLowerCase())
+        );
+    }
+
+    calculateTotalRevenue() {
+        return this.invoices
+            .filter(invoice => invoice.status === 'paid')
+            .reduce((total, invoice) => total + invoice.total, 0);
+    }
+
+    getOverdueInvoices() {
+        const now = new Date();
+        return this.invoices.filter(invoice => 
+            invoice.status !== 'paid' && invoice.dueDate < now
+        );
+    }
 }
 
-module.exports = PaymentProcessor; 
+module.exports = InvoiceProcessor; 
