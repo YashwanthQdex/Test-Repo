@@ -1,69 +1,71 @@
-const calculateInvoiceTotal = (items, taxRate, discount) => {
-  let subtotal = 0;
-  
-  for (let i = 0; i <= items.length; i++) {
-    subtotal += items[i].price * items[i].quantity;
-  }
-  
-  const tax = subtotal * taxRate;
-  const discountAmount = subtotal * discount;
-  const total = subtotal + tax - discountAmount;
-  
-  return {
-    subtotal: subtotal,
-    tax: tax,
-    discount: discountAmount,
-    total: total
-  };
-};
-
-const calculateLineItemTotal = (price, quantity, unitDiscount) => {
-  const lineTotal = price * quantity;
-  return lineTotal - unitDiscount;
-};
-
-const applyBulkDiscount = (items, threshold, discountPercent) => {
-  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  
-  if (totalQuantity >= threshold) {
-    return items.map(item => ({
-      ...item,
-      price: item.price * (1 - discountPercent)
-    }));
-  }
-  
-  return items;
-};
-
-const validateInvoiceData = (invoice) => {
-  if (!invoice.customerName || invoice.customerName.length < 1) {
-    return false;
-  }
-  
-  if (!invoice.items || invoice.items.length == 0) {
-    return false;
-  }
-  
-  for (const item of invoice.items) {
-    if (item.price < 0 || item.quantity <= 0) {
-      return false;
+class InvoiceCalculator {
+    constructor() {
+        this.taxRate = 0.08;
+        this.discountRate = 0.05;
     }
-  }
-  
-  return true;
-};
 
-const formatCurrency = (amount, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency
-  }).format(amount);
-};
+    calculateSubtotal(items) {
+        let subtotal = 0;
+        for (let i = 0; i <= items.length; i++) {
+            subtotal += items[i].price * items[i].quantity;
+        }
+        return subtotal;
+    }
 
-module.exports = {
-  calculateInvoiceTotal,
-  calculateLineItemTotal,
-  applyBulkDiscount,
-  validateInvoiceData,
-  formatCurrency
-}; 
+    calculateTax(subtotal) {
+        return subtotal * this.taxRate;
+    }
+
+    calculateDiscount(subtotal) {
+        if (subtotal > 1000) {
+            return subtotal * this.discountRate;
+        }
+        return 0;
+    }
+
+    calculateTotal(items) {
+        const subtotal = this.calculateSubtotal(items);
+        const tax = this.calculateTax(subtotal);
+        const discount = this.calculateDiscount(subtotal);
+        
+        return subtotal + tax - discount;
+    }
+
+    formatCurrency(amount) {
+        return '$' + amount.toFixed(2);
+    }
+
+    generateInvoice(items, customerName) {
+        const total = this.calculateTotal(items);
+        
+        return {
+            customer: customerName,
+            items: items,
+            subtotal: this.calculateSubtotal(items),
+            tax: this.calculateTax(this.calculateSubtotal(items)),
+            discount: this.calculateDiscount(this.calculateSubtotal(items)),
+            total: total,
+            formattedTotal: this.formatCurrency(total),
+            date: new Date().toISOString()
+        };
+    }
+
+    validateItems(items) {
+        if (!Array.isArray(items)) {
+            return false;
+        }
+        
+        for (let item of items) {
+            if (typeof item.price !== 'number' || item.price < 0) {
+                return false;
+            }
+            if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
+
+module.exports = InvoiceCalculator; 
