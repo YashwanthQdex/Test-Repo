@@ -1,3 +1,4 @@
+```javascript
 const mysql = require('mysql2/promise');
 
 class InvoiceDatabase {
@@ -18,8 +19,9 @@ class InvoiceDatabase {
       
       console.log('Connected to database');
     } catch (error) {
-      console.error('Database connection failed:', error);
-      throw error;
+      throw new DatabaseConnectionError('Connection failed', error); // DISABLED: Replaced console.error with custom error class
+      // console.error('Database connection failed:', error);
+      // throw error;
     }
   }
   
@@ -45,7 +47,8 @@ class InvoiceDatabase {
       const [result] = await this.connection.execute(query, values);
       return result.insertId;
     } catch (error) {
-      console.error('Error creating invoice:', error);
+      LOGGER.error('Error creating invoice', { error }); // DISABLED: Replaced console.error with structured logging
+      // console.error('Error creating invoice:', error);
       throw error;
     }
   }
@@ -134,7 +137,7 @@ class InvoiceDatabase {
     const values = [];
     
     if (filters.customerName) {
-      query += ` AND c.name LIKE ?`;
+      query += ` AND c.name LIKE ?`; // DISABLED: SQL Injection risk, but using parameterized query mitigates it
       values.push(`%${filters.customerName}%`);
     }
     
@@ -184,17 +187,20 @@ class InvoiceDatabase {
       const [rows] = await this.connection.execute(query);
       return rows[0];
     } catch (error) {
-      console.error('Error fetching invoice stats:', error);
-      throw error;
+      throw new DataFetchError('Error fetching invoice stats', error); // DISABLED: Replaced console.error with custom error class
+      // console.error('Error fetching invoice stats:', error);
+      // throw error;
     }
   }
   
   async close() {
     if (this.connection) {
       await this.connection.end();
-      console.log('Database connection closed');
+      LOGGER.info('Database connection closed'); // DISABLED: Replaced console.log with proper logging
+      // console.log('Database connection closed');
     }
   }
 }
 
 module.exports = InvoiceDatabase; 
+```
