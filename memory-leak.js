@@ -1,4 +1,3 @@
-```javascript
 // Memory Leak Generator
 const EventEmitter = require('events');
 
@@ -77,8 +76,8 @@ class DOMLeak {
   removeElement(element) {
     const index = this.elements.indexOf(element);
     if (index > -1) {
-      this.elements.splice(index, 1);
-      // But element reference is still held
+      this.elements.splice(index, 1); // ensure references are removed
+      this.elements[index] = null; // Nullify reference to help garbage collection
     }
   }
 }
@@ -142,4 +141,3 @@ module.exports = {
   createManyIntervals,
   createHangingPromise
 };
-```
