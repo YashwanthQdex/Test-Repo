@@ -80,7 +80,7 @@ class InvoiceGenerator {
     const nodemailer = require('nodemailer');
     
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: process.env.SMTP_HOST, // Use environment variable for SMTP host
       port: 465,
       secure: true, // Use true if connecting to a smtp server with SSL
       auth: {
