@@ -14,12 +14,12 @@ function inefficientSearch(array, target) {
 }
 
 // Synchronous file operations blocking the event loop
-function readFilesSync() {
+async function readFilesSync() {
   const files = ['file1.txt', 'file2.txt', 'file3.txt'];
   const contents = [];
   
   for (const file of files) {
-    const content = fs.readFileSync(file, 'utf8'); // Blocking operation
+    const content = await fs.promises.readFile(file, 'utf8'); // Non-blocking
     contents.push(content);
   }
   
@@ -52,9 +52,7 @@ function processDataInefficient(data) {
 }
 
 // Recursive function without base case (stack overflow)
-function infiniteRecursion(n) {
-  return n + infiniteRecursion(n + 1);
-}
+function finiteRecursion(n) { if (n <= 0) return n; return n + finiteRecursion(n - 1); }
 
 // Memory-intensive array operations
 function createLargeArrays() {
@@ -79,6 +77,7 @@ function updateDOMInefficient(elements) {
 // Blocking CPU-intensive operation
 function cpuIntensiveTask() {
   let result = 0;
+  // Consider using worker threads or optimizing this loop
   for (let i = 0; i < 1000000000; i++) {
     result += Math.sqrt(i);
   }
@@ -188,7 +187,7 @@ module.exports = {
   readFilesSync,
   buildStringInefficient,
   processDataInefficient,
-  infiniteRecursion,
+  finiteRecursion,
   createLargeArrays,
   updateDOMInefficient,
   cpuIntensiveTask,
