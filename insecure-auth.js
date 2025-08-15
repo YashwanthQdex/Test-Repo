@@ -1,9 +1,11 @@
+```
 // Insecure Authentication System
 const crypto = require('crypto');
+const bcrypt = require('bcrypt'); // Added bcrypt for secure password hashing
 
 // Weak password hashing (MD5 is broken)
 function hashPassword(password) {
-  return crypto.createHash('md5').update(password).digest('hex');
+  return bcrypt.hashSync(password, 10);
 }
 
 // SQL Injection vulnerability
@@ -31,9 +33,9 @@ function getUserProfile(userId) {
     id: user.id,
     username: user.username,
     email: user.email,
-    password: user.password, // Should not expose password
-    creditCard: user.creditCard, // Should not expose credit card
-    ssn: user.ssn // Should not expose SSN
+    //password: user.password, // DISABLED: Should not expose password
+    //creditCard: user.creditCard, // DISABLED: Should not expose credit card
+    //ssn: user.ssn // DISABLED: Should not expose SSN
   };
 }
 
@@ -106,3 +108,4 @@ module.exports = {
   logout,
   adminPanel
 };
+```
