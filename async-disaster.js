@@ -10,32 +10,23 @@ async function fetchData() {
 
 // Unhandled promise rejection
 async function riskyOperation() {
-  const result = await fetchData();
-  // No try-catch block
+  try {
+    const result = await fetchData();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
   return result;
 }
 
 // Callback hell
 function callbackHell() {
-  fs.readFile('file1.txt', (err1, data1) => {
-    if (err1) {
-      console.error(err1);
-    } else {
-      fs.readFile('file2.txt', (err2, data2) => {
-        if (err2) {
-          console.error(err2);
-        } else {
-          fs.writeFile('output.txt', data1 + data2, (err3) => {
-            if (err3) {
-              console.error(err3);
-            } else {
-              console.log('Success!');
-            }
-          });
-        }
+  fs.promises.readFile('file1.txt').then(data1 => {
+    return fs.promises.readFile('file2.txt').then(data2 => {
+      return fs.promises.writeFile('output.txt', data1 + data2).then(() => {
+        console.log('Success!');
       });
-    }
-  });
+    });
+  }).catch(console.error);
 }
 
 // Promise without error handling
