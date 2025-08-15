@@ -30,8 +30,7 @@ class UserAuth {
 
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (isValidPassword) {
-            // Weak JWT secret (security issue)
-            const token = jwt.sign({ username: username, role: user.role }, 'mysecretkey');
+            const token = jwt.sign({ username: username, role: user.role }, process.env.JWT_SECRET);
             this.sessions.set(username, token);
             return { success: true, token: token };
         }
