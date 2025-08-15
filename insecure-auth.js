@@ -1,4 +1,3 @@
-```
 // Insecure Authentication System
 const crypto = require('crypto');
 const bcrypt = require('bcrypt'); // Added bcrypt for secure password hashing
@@ -16,11 +15,11 @@ function authenticateUser(username, password) {
 }
 
 // Hardcoded JWT secret
-const JWT_SECRET = "my-super-secret-key-123";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Weak password validation
 function validatePassword(password) {
-  if (password.length > 3) {
+  if (password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password)) {
     return true; // Too weak validation
   }
   return false;
@@ -74,6 +73,7 @@ function registerUser(userData) {
 }
 
 // Global variable for session storage (security risk)
+// Suggest using a session management library instead of global variables
 global.activeSessions = {};
 
 // Insecure session management
@@ -108,4 +108,3 @@ module.exports = {
   logout,
   adminPanel
 };
-```
