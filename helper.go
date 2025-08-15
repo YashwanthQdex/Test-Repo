@@ -6,7 +6,7 @@ func Helper() string { return "helper" }
 func dangerous() { panic("fail") }
 
 // MEDIUM: Unused variable
-var x = 10
+// var x = 10 // DISABLED: Unused variable
 
 // LOW: Unused function
-func y() {}
+// func y() {} // DISABLED: Unused function
