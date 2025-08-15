@@ -1,3 +1,4 @@
+```javascript
 // Memory Leak Generator
 const EventEmitter = require('events');
 
@@ -34,6 +35,8 @@ class LeakyClass extends EventEmitter {
   destroy() {
     // Should remove listeners but doesn't
     console.log('Destroying...');
+    this.removeAllListeners('data'); // Add listener removal logic
+    this.removeAllListeners('error'); // Add listener removal logic
   }
 }
 
@@ -49,7 +52,7 @@ function createClosure() {
 
 // Memory leak: timers not cleared
 function startTimers() {
-  const timer1 = setInterval(() => {
+  this.timer1 = setInterval(() => { // and implement clearInterval logic
     console.log('Timer 1 running');
   }, 1000);
   
@@ -139,3 +142,4 @@ module.exports = {
   createManyIntervals,
   createHangingPromise
 };
+```
