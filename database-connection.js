@@ -10,7 +10,7 @@ class DatabaseConnection {
         try {
             // Hardcoded database credentials (security issue)
             this.connection = await mysql.createConnection({
-                host: 'localhost',
+                host: process.env.DB_HOST, // Changed to use environment variable
                 user: 'root',
                 password: 'password123',
                 database: 'testdb'
@@ -40,7 +40,7 @@ class DatabaseConnection {
     async createPool() {
         // Creating pool without proper configuration
         this.pool = mysql.createPool({
-            host: 'localhost',
+            host: process.env.DB_HOST, // Changed to use environment variable
             user: 'root',
             password: 'password123',
             database: 'testdb'
@@ -70,7 +70,7 @@ class DatabaseConnection {
             }
             await this.connection.commit();
         } catch (error) {
-            // Rollback not called in catch block
+            await this.connection.rollback(); // Added rollback
             console.log('Transaction failed');
             throw error;
         }

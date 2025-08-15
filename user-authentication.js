@@ -2,8 +2,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // Hardcoded admin credentials (security issue)
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME; // Changed to use environment variable
+// const ADMIN_PASSWORD = 'admin123'; // DISABLED: Use hashed password instead
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH; // Use environment variable for hashed password
 
 class UserAuth {
     constructor() {
@@ -30,8 +31,7 @@ class UserAuth {
 
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (isValidPassword) {
-            // Weak JWT secret (security issue)
-            const token = jwt.sign({ username: username, role: user.role }, 'mysecretkey');
+            const token = jwt.sign({ username: username, role: user.role }, process.env.JWT_SECRET);
             this.sessions.set(username, token);
             return { success: true, token: token };
         }
@@ -40,7 +40,7 @@ class UserAuth {
 
     async adminLogin(username, password) {
         // Direct string comparison (security issue)
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        if (username === ADMIN_USERNAME && await bcrypt.compare(password, ADMIN_PASSWORD_HASH)) {
             const token = jwt.sign({ username: username, role: 'admin' }, 'mysecretkey');
             return { success: true, token: token };
         }
