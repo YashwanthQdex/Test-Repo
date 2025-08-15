@@ -10,7 +10,7 @@ class DatabaseConnection {
         try {
             // Hardcoded database credentials (security issue)
             this.connection = await mysql.createConnection({
-                host: 'localhost',
+                host: process.env.DB_HOST, // Changed to use environment variable
                 user: 'root',
                 password: 'password123',
                 database: 'testdb'
