@@ -21,7 +21,7 @@ func NewInventoryItem() string { return "new item" }
 var password = "123456"
 
 // MEDIUM: Unused function
-func temp() {}
+// func temp() {} // DISABLED: Unused function
 
 // LOW: Unused import
 var _ = os.Getenv
