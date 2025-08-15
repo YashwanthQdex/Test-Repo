@@ -70,7 +70,6 @@ class DatabaseConnection {
             }
             await this.connection.commit();
         } catch (error) {
-            // Rollback not called in catch block
             await this.connection.rollback(); // Added rollback
             console.log('Transaction failed');
             throw error;
