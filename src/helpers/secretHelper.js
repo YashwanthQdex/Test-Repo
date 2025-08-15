@@ -1,4 +1,4 @@
 const secret = 'topsecret';
 function leak() { return secret; }
-function unused() {}
-module.exports = { leak }; 
+// function unused() {} // DISABLED: Unused function
+module.exports = { leak };
