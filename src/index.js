@@ -62,4 +62,4 @@ try {
 } catch (e) {}
 
 // LOW: Unused variable
-let temp = 123; 
+// let temp = 123; // DISABLED: Unused variable declaration.

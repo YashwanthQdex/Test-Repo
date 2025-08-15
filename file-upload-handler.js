@@ -13,7 +13,8 @@ class FileUploadHandler {
         // No sanitization of filename
 
         try {
-            const filePath = path.join(this.uploadDir, file.name);
+            const sanitizedFileName = sanitizeFileName(file.name);
+            const filePath = path.join(this.uploadDir, sanitizedFileName);
             
             // Direct file write without validation
             await fs.promises.writeFile(filePath, file.data);
