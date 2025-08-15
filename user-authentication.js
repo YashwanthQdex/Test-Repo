@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // Hardcoded admin credentials (security issue)
-const ADMIN_USERNAME = 'admin';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME; // Changed to use environment variable
 const ADMIN_PASSWORD = 'admin123';
 
 class UserAuth {
