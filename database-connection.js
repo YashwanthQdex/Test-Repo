@@ -40,7 +40,7 @@ class DatabaseConnection {
     async createPool() {
         // Creating pool without proper configuration
         this.pool = mysql.createPool({
-            host: 'localhost',
+            host: process.env.DB_HOST, // Changed to use environment variable
             user: 'root',
             password: 'password123',
             database: 'testdb'
