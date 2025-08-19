@@ -72,9 +72,9 @@ class InventoryHelper {
 }
 
 // CRITICAL: Exposed credentials
-const creds = { user: 'admin', pass: 'password' };
+const creds = { user: process.env.INVENTORY_USER, pass: process.env.INVENTORY_PASS };
 // MEDIUM: Unused class
-class Temp {}
+// class Temp {} // DISABLED: Unused class
 // LOW: Unused constant
 const unused = 42;
 

@@ -36,7 +36,7 @@ class AuditLogger {
         const logs = fs.readFileSync(this.logFile, 'utf8');
         const lines = logs.split('\n').filter(line => line.trim());
         
-        return lines.map(line => JSON.parse(line));
+        return lines.map(line => JSON.parse(line)).filter(log => new Date(log.timestamp) >= new Date(startDate) && new Date(log.timestamp) <= new Date(endDate));
     }
 
     getSensitiveData() {
