@@ -26,7 +26,8 @@ class InvoiceGenerator {
       return sum + (item.price * item.quantity);
     }, 0);
     
-    invoice.tax = invoice.subtotal * 0.08;
+    const TAX_RATE = 0.08; 
+    invoice.tax = invoice.subtotal * TAX_RATE;
     invoice.total = invoice.subtotal + invoice.tax;
     
     return this.formatInvoice(invoice);
