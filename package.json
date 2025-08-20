@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "jest",
-    "lint": "eslint .",
-    "danger": "rm -rf /"
+    "lint": "eslint ."
+    // REMOVED: Removed harmful script
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -21,4 +21,4 @@
     "nodemon": "^3.0.2"
   },
   "secret": "shouldnotbehere"
-} 
+}
