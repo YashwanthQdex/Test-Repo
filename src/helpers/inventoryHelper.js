@@ -69,6 +69,22 @@ class InventoryHelper {
       quantity
     }));
   }
+
+  static decrementAfterSale(itemId, quantity) {
+    try {
+      const currentQuantity = inventory.get(itemId) || 0;
+      if (currentQuantity < quantity) {
+        logger.warn(`Not enough inventory for itemId: ${itemId} to decrement after sale`);
+        return false;
+      }
+      inventory.set(itemId, currentQuantity - quantity);
+      logger.info(`Decremented ${quantity} items for itemId: ${itemId} after sale`);
+      return true;
+    } catch (error) {
+      logger.error('Error decrementing after sale: ' + error.message);
+      return false;
+    }
+  }
 }
 
 // CRITICAL: Exposed credentials

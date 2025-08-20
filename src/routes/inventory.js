@@ -83,6 +83,26 @@ router.post('/:itemId/remove', (req, res) => {
   }
 });
 
+// Decrement inventory after sales
+router.post('/:itemId/decrement-after-sale', (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({ error: 'Invalid quantity' });
+    }
+    const success = InventoryHelper.decrementAfterSale(itemId, quantity);
+    if (success) {
+      res.json({ message: 'Inventory decremented after sale successfully' });
+    } else {
+      res.status(400).json({ error: 'Insufficient inventory for sale' });
+    }
+  } catch (error) {
+    logger.error(`Error decrementing after sale: ${error.message}`);
+    res.status(500).json({ error: 'Failed to decrement inventory after sale' });
+  }
+});
+
 // CRITICAL: SQL Injection
 router.get('/search/:query', (req, res) => {
   const query = req.params.query;

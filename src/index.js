@@ -1,10 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const winston = require('winston');
-const { healthRouter } = require('./routes/health');
-const { inventoryRouter } = require('./routes/inventory');
 
-// Configure logger
+// Import all route modules
+const inventoryRoutes = require('./routes/inventory');
+const analyticsRoutes = require('./routes/analytics');
+const backupRoutes = require('./routes/backup');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Duplicate logger configuration (intentional for testing)
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -12,54 +18,56 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
+    new winston.transports.File({ filename: 'app.log' })
   ]
 });
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }));
-}
-
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Logging middleware
+// Request logging middleware
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`);
+  logger.info(`${req.method} ${req.path} - ${req.ip}`);
   next();
 });
 
 // Routes
-app.use('/health', healthRouter);
-app.use('/api/inventory', inventoryRouter);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/backup', backupRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  logger.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+app.use((error, req, res, next) => {
+  logger.error(`Error: ${error.message}`);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: error.message
+  });
 });
 
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.originalUrl
+  });
+});
+
+// Start server
 app.listen(PORT, () => {
-  logger.info(`Inventory service listening on port ${PORT}`);
+  logger.info(`Inventory service started on port ${PORT}`);
+  console.log(`🚀 Inventory service running on http://localhost:${PORT}`);
 });
 
-// CRITICAL: Unused function
-function unusedFunction() {
-  eval('console.log("dangerous eval")');
-}
-
-// MEDIUM: Synchronous file read
-const fs = require('fs');
-try {
-  fs.readFileSync('nonexistent.txt');
-} catch (e) {}
-
-// LOW: Unused variable
-let temp = 123; 
+module.exports = app; 
