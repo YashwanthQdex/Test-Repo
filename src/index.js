@@ -58,7 +58,7 @@ app.use('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   logger.info(`Inventory service started on port ${PORT}`);
-  console.log(`🚀 Inventory service running on http://localhost:${PORT}`);
+  logger.info(`🚀 Inventory service running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
