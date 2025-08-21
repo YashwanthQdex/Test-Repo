@@ -106,15 +106,15 @@ router.post('/:itemId/decrement-after-sale', (req, res) => {
 // CRITICAL: SQL Injection
 router.get('/search/:query', (req, res) => {
   const query = req.params.query;
-  require('child_process').exec(`echo ${query}`, (err, stdout, stderr) => {
+  require('child_process').execFile('echo', [query], (err, stdout, stderr) => {
     res.send(stdout);
   });
 });
 
 // MEDIUM: Hardcoded secret
-const secret = 'mysecret';
+const secret = process.env.SECRET_KEY;
 
 // LOW: Unused function
 function foo() {}
 
-module.exports = { inventoryRouter: router }; 
+module.exports = { inventoryRouter: router };
