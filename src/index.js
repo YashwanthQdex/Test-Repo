@@ -10,17 +10,8 @@ const backupRoutes = require('./routes/backup');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Duplicate logger configuration (intentional for testing)
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: 'app.log' })
-  ]
-});
+// Import a shared logger module here
+const logger = require('./logger');
 
 // Middleware
 app.use(cors());
@@ -70,4 +61,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Inventory service running on http://localhost:${PORT}`);
 });
 
-module.exports = app; 
+module.exports = app;
