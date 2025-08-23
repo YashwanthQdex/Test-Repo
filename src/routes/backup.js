@@ -164,11 +164,11 @@ router.post('/with-analytics', (req, res) => {
 router.get('/download/:fileName', (req, res) => {
   try {
     const { fileName } = req.params;
-    // CRITICAL: No path validation - allows directory traversal
-    const filePath = `./backups/${fileName}`;
+    const path = require('path');
+    const filePathSafe = path.join(__dirname, 'backups', path.basename(fileName));
     
-    if (require('fs').existsSync(filePath)) {
-      res.download(filePath);
+    if (require('fs').existsSync(filePathSafe)) {
+      res.download(filePathSafe);
     } else {
       res.status(404).json({ error: 'Backup file not found' });
     }
@@ -201,4 +201,4 @@ router.get('/status', (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
