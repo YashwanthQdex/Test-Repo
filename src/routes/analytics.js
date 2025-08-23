@@ -85,8 +85,7 @@ router.get('/validate', (req, res) => {
 router.get('/search/:query', (req, res) => {
   try {
     const query = req.params.query;
-    // CRITICAL: Direct query execution without sanitization
-    const result = InventoryValidation.validateItemExists(query);
+    const result = InventoryValidation.validateItemExists(escape(query));
     res.json({
       success: true,
       result,
@@ -171,4 +170,4 @@ router.get('/analyze/:itemId/:operation', (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
