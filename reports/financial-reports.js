@@ -1,4 +1,5 @@
 const fs = require('fs');
+const Big = require('big.js');
 
 class FinancialReports {
     constructor() {
@@ -82,7 +83,7 @@ class FinancialReports {
 
         const grossProfit = income;
         const operatingExpenses = expenses;
-        const netIncome = grossProfit - operatingExpenses;
+        const netIncome = Big(grossProfit).minus(operatingExpenses).toNumber();
 
         return {
             period: { startDate, endDate },
@@ -343,7 +344,7 @@ class FinancialReports {
             return csv;
         }
 
-        return JSON.stringify(data, null, 2);
+        return fs.promises.writeFile('data.json', JSON.stringify(data, null, 2));
     }
 
     generateTransactionId() {
