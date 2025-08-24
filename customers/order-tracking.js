@@ -283,7 +283,14 @@ class OrderTracking {
         };
 
         this.notifications.push(notification);
+        this.clearOldNotifications();
         return notification;
+    }
+
+    clearOldNotifications(thresholdDays = 30) {
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() - thresholdDays);
+        this.notifications = this.notifications.filter(notification => notification.timestamp >= thresholdDate);
     }
 
     getCustomerNotifications(customerId, limit = 20) {

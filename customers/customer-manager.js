@@ -7,6 +7,17 @@ class CustomerManager {
     }
 
     addCustomer(customerData) {
+        // Add input validation logic here
+        if (!customerData || typeof customerData !== 'object') {
+            throw new Error('Invalid customer data');
+        }
+        if (!customerData.firstName || !customerData.lastName) {
+            throw new Error('Customer must have a first and last name');
+        }
+        if (!customerData.email || !this.validateEmail(customerData.email)) {
+            throw new Error('Invalid email address');
+        }
+
         const customer = {
             id: customerData.id || this.generateCustomerId(),
             type: customerData.type || 'individual', // individual, business
@@ -38,6 +49,11 @@ class CustomerManager {
 
         this.customers.set(customer.id, customer);
         return customer;
+    }
+
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 
     updateCustomer(customerId, updates) {
