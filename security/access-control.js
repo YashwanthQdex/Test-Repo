@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt'); // Added bcrypt import for secure password verification
+
 class AccessControl {
     constructor() {
         this.users = new Map();
@@ -322,8 +324,8 @@ class AccessControl {
     }
 
     verifyPassword(password, hash) {
-        // Simple verification simulation
-        return hash.includes(password);
+        // Secure password verification using bcrypt
+        return bcrypt.compareSync(password, hash);
     }
 
     logAuditEvent(action, userId, details) {
