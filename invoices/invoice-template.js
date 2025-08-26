@@ -1,3 +1,5 @@
+const DOMPurify = require('dompurify');
+
 class InvoiceTemplate {
     constructor() {
         this.templates = new Map();
@@ -57,7 +59,7 @@ class InvoiceTemplate {
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>Invoice ${invoiceData.invoiceNumber}</title>
+            <title>Invoice ${DOMPurify.sanitize(invoiceData.invoiceNumber)}</title>
             <style>
                 body { font-family: ${template.fonts.primary}, sans-serif; margin: 0; padding: 20px; }
                 .header { border-bottom: 2px solid ${template.colors.primary}; padding-bottom: 20px; }
@@ -114,9 +116,9 @@ class InvoiceTemplate {
             </div>
             <div class="invoice-info">
                 <h1>INVOICE</h1>
-                <p><strong>Invoice #:</strong> ${invoiceData.invoiceNumber}</p>
-                <p><strong>Date:</strong> ${invoiceData.invoiceDate}</p>
-                <p><strong>Due Date:</strong> ${invoiceData.dueDate}</p>
+                <p><strong>Invoice #:</strong> ${DOMPurify.sanitize(invoiceData.invoiceNumber)}</p>
+                <p><strong>Date:</strong> ${DOMPurify.sanitize(invoiceData.invoiceDate)}</p>
+                <p><strong>Due Date:</strong> ${DOMPurify.sanitize(invoiceData.dueDate)}</p>
             </div>
         </div>
         `;
@@ -127,16 +129,16 @@ class InvoiceTemplate {
         <div class="billing-section">
             <div style="float: left;">
                 <h3>Bill To:</h3>
-                <p><strong>${invoiceData.customer.name}</strong></p>
-                <p>${invoiceData.customer.address}</p>
-                <p>${invoiceData.customer.city}, ${invoiceData.customer.state} ${invoiceData.customer.zip}</p>
-                <p>Email: ${invoiceData.customer.email}</p>
+                <p><strong>${DOMPurify.sanitize(invoiceData.customer.name)}</strong></p>
+                <p>${DOMPurify.sanitize(invoiceData.customer.address)}</p>
+                <p>${DOMPurify.sanitize(invoiceData.customer.city)}, ${DOMPurify.sanitize(invoiceData.customer.state)} ${DOMPurify.sanitize(invoiceData.customer.zip)}</p>
+                <p>Email: ${DOMPurify.sanitize(invoiceData.customer.email)}</p>
             </div>
             <div style="float: right;">
                 <h3>Ship To:</h3>
-                <p><strong>${invoiceData.shipping ? invoiceData.shipping.name : invoiceData.customer.name}</strong></p>
-                <p>${invoiceData.shipping ? invoiceData.shipping.address : invoiceData.customer.address}</p>
-                <p>${invoiceData.shipping ? `${invoiceData.shipping.city}, ${invoiceData.shipping.state} ${invoiceData.shipping.zip}` : `${invoiceData.customer.city}, ${invoiceData.customer.state} ${invoiceData.customer.zip}`}</p>
+                <p><strong>${invoiceData.shipping ? DOMPurify.sanitize(invoiceData.shipping.name) : DOMPurify.sanitize(invoiceData.customer.name)}</strong></p>
+                <p>${invoiceData.shipping ? DOMPurify.sanitize(invoiceData.shipping.address) : DOMPurify.sanitize(invoiceData.customer.address)}</p>
+                <p>${invoiceData.shipping ? `${DOMPurify.sanitize(invoiceData.shipping.city)}, ${DOMPurify.sanitize(invoiceData.shipping.state)} ${DOMPurify.sanitize(invoiceData.shipping.zip)}` : `${DOMPurify.sanitize(invoiceData.customer.city)}, ${DOMPurify.sanitize(invoiceData.customer.state)} ${DOMPurify.sanitize(invoiceData.customer.zip)}`}</p>
             </div>
             <div style="clear: both;"></div>
         </div>
@@ -160,8 +162,8 @@ class InvoiceTemplate {
         for (const item of invoiceData.items) {
             itemsHtml += `
                 <tr>
-                    <td>${item.description}</td>
-                    <td>${item.quantity}</td>
+                    <td>${DOMPurify.sanitize(item.description)}</td>
+                    <td>${DOMPurify.sanitize(item.quantity.toString())}</td>
                     <td>$${item.unitPrice.toFixed(2)}</td>
                     <td>$${(item.quantity * item.unitPrice).toFixed(2)}</td>
                 </tr>
@@ -206,7 +208,7 @@ class InvoiceTemplate {
     generateFooter(template) {
         return `
         <div class="footer">
-            <p>${template.footer}</p>
+            <p>${DOMPurify.sanitize(template.footer)}</p>
             <p>Payment Terms: Net 30 days</p>
         </div>
         `;

@@ -205,24 +205,20 @@ class SalesAnalytics {
             sale.timestamp >= startDate && sale.timestamp <= endDate && sale.region
         );
 
-        const regionData = new Map();
-
-        for (const sale of filteredSales) {
-            const region = sale.region;
-            const existing = regionData.get(region) || {
-                region: region,
+        const regionData = filteredSales.reduce((map, sale) => {
+            if (!map.has(sale.region)) map.set(sale.region, {
+                region: sale.region,
                 salesCount: 0,
                 totalRevenue: 0,
                 totalProfit: 0,
                 marketShare: 0
-            };
-
+            });
+            const existing = map.get(sale.region);
             existing.salesCount += 1;
             existing.totalRevenue += sale.totalAmount;
             existing.totalProfit += sale.profit;
-
-            regionData.set(region, existing);
-        }
+            return map;
+        }, new Map());
 
         const totalRevenue = Array.from(regionData.values())
             .reduce((sum, region) => sum + region.totalRevenue, 0);

@@ -42,9 +42,7 @@ class WarehouseManagement {
 
     addLocation(zoneId, locationId, locationData) {
         const zone = this.zones.get(zoneId);
-        if (!zone) {
-            return false;
-        }
+        if (!zone) { console.error('Attempted to access non-existing zone'); return false; }
 
         const location = {
             id: locationId,
