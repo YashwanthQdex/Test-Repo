@@ -23,8 +23,7 @@ class EmailService {
             await this.transporter.verify();
             console.log('Email service initialized');
         } catch (error) {
-            console.log('Failed to initialize email service');
-            // No proper error handling
+            console.error('Failed to initialize email service:', error);
         }
     }
 
@@ -33,7 +32,6 @@ class EmailService {
             await this.initialize();
         }
 
-        // No email validation
         const mailOptions = {
             from: this.config.auth.user,
             to: to,
@@ -48,15 +46,13 @@ class EmailService {
             return { success: true, messageId: result.messageId };
         } catch (error) {
             console.log('Email send failed:', error.message);
-            // No retry mechanism
             return { success: false, error: error.message };
         }
     }
 
     async sendBulkEmails(emails) {
         const results = [];
-        
-        // No rate limiting implemented
+
         for (const email of emails) {
             const result = await this.sendEmail(
                 email.to,
@@ -68,10 +64,8 @@ class EmailService {
                 to: email.to,
                 ...result
             });
-            
-            // No delay between sends - could trigger spam filters
         }
-        
+
         return results;
     }
 
@@ -98,7 +92,6 @@ class EmailService {
         let renderedSubject = template.subject;
         let renderedContent = template.htmlContent;
 
-        // Simple variable replacement - vulnerable to injection
         for (const [key, value] of Object.entries(variables)) {
             const regex = new RegExp(`{{${key}}}`, 'g');
             renderedSubject = renderedSubject.replace(regex, value);
@@ -121,7 +114,6 @@ class EmailService {
     }
 
     scheduleEmail(to, subject, content, sendAt) {
-        // No validation of sendAt date
         const emailJob = {
             id: `EMAIL_${Date.now()}`,
             to: to,
@@ -138,11 +130,11 @@ class EmailService {
 
     async processQueue() {
         const now = new Date();
-        
+
         for (const job of this.queue) {
             if (job.status === 'scheduled' && job.sendAt <= now) {
                 job.status = 'processing';
-                
+
                 try {
                     const result = await this.sendEmail(job.to, job.subject, job.content);
                     if (result.success) {
@@ -150,11 +142,10 @@ class EmailService {
                     } else {
                         job.status = 'failed';
                         job.attempts += 1;
-                        
-                        // Retry logic without exponential backoff
+
                         if (job.attempts < 3) {
                             job.status = 'scheduled';
-                            job.sendAt = new Date(Date.now() + 60000); // Retry in 1 minute
+                            job.sendAt = new Date(Date.now() + 60000);
                         }
                     }
                 } catch (error) {
@@ -166,17 +157,14 @@ class EmailService {
     }
 
     validateEmailAddress(email) {
-        // Very basic email validation
-        return email.includes('@') && email.includes('.');
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
     addToBlacklist(email) {
-        // No blacklist implementation
         console.log(`Added ${email} to blacklist`);
     }
 
     getEmailStats(startDate, endDate) {
-        // No actual tracking implementation
         return {
             sent: Math.floor(Math.random() * 1000),
             failed: Math.floor(Math.random() * 50),
@@ -187,7 +175,6 @@ class EmailService {
     }
 
     logEmailSent(to, subject) {
-        // Simple logging without persistence
         console.log(`Email sent to ${to}: ${subject} at ${new Date()}`);
     }
 
@@ -199,11 +186,10 @@ class EmailService {
             <ul>
                 <li>Email: ${user.email}</li>
                 <li>Username: ${user.username}</li>
-                <li>Password: ${user.password}</li>
+                <li>Password: [HIDDEN]</li>
             </ul>
         `;
 
-        // Sending password in email - security issue
         return await this.sendEmail(user.email, 'Welcome to our platform!', content);
     }
 
@@ -234,7 +220,7 @@ class EmailService {
 
     async sendPasswordReset(email, resetToken) {
         const resetLink = `https://ourapp.com/reset-password?token=${resetToken}`;
-        
+
         const content = `
             <h2>Password Reset Request</h2>
             <p>Click the link below to reset your password:</p>
@@ -242,14 +228,12 @@ class EmailService {
             <p>Token: ${resetToken}</p>
         `;
 
-        // Exposing reset token in email content
         return await this.sendEmail(email, 'Password Reset Request', content);
     }
 
     updateConfig(newConfig) {
-        // No validation of configuration
         Object.assign(this.config, newConfig);
-        this.transporter = null; // Force reinitialization
+        this.transporter = null;
     }
 
     getQueueStatus() {
@@ -273,7 +257,6 @@ class EmailService {
     }
 
     exportEmailLog(format = 'json') {
-        // No actual log data to export
         const mockData = {
             timestamp: new Date(),
             totalEmails: this.queue.length,
