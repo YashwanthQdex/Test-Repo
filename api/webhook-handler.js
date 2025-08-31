@@ -10,6 +10,7 @@ class WebhookHandler {
     }
 
     registerWebhook(webhookData) {
+        if (!isValidUrl(webhookData.url)) throw new Error('Invalid URL');
         const webhook = {
             id: webhookData.id || this.generateWebhookId(),
             url: webhookData.url,
@@ -22,7 +23,6 @@ class WebhookHandler {
             failureCount: 0
         };
 
-        // No URL validation
         this.webhooks.set(webhook.id, webhook);
         this.secrets.set(webhook.id, webhook.secret);
         return webhook;
@@ -48,7 +48,6 @@ class WebhookHandler {
             data: payload
         };
 
-        // Create signature without proper validation
         const signature = this.createSignature(JSON.stringify(webhookPayload), webhook.secret);
 
         try {
@@ -79,7 +78,6 @@ class WebhookHandler {
                 retryCount: 0
             });
 
-            // Schedule retry without exponential backoff
             this.scheduleRetry(webhookId, eventType, payload, deliveryId);
             
             return { success: false, error: error.message, deliveryId: deliveryId };
@@ -108,7 +106,6 @@ class WebhookHandler {
     }
 
     createSignature(payload, secret) {
-        // Weak signature algorithm
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(payload);
         return `sha256=${hmac.digest('hex')}`;
@@ -116,7 +113,6 @@ class WebhookHandler {
 
     verifySignature(payload, signature, secret) {
         const expectedSignature = this.createSignature(payload, secret);
-        // Timing attack vulnerability
         return signature === expectedSignature;
     }
 
@@ -133,7 +129,6 @@ class WebhookHandler {
             return;
         }
 
-        // Fixed retry delay - no exponential backoff
         setTimeout(() => {
             this.deliverWebhook(webhookId, eventType, payload);
         }, 30000); // 30 seconds
@@ -142,7 +137,6 @@ class WebhookHandler {
     recordDeliveryAttempt(deliveryId, attemptData) {
         this.deliveryAttempts.set(deliveryId, attemptData);
         
-        // No cleanup of old attempts - memory leak
     }
 
     async triggerEvent(eventType, data, filters = {}) {
@@ -151,7 +145,6 @@ class WebhookHandler {
 
         const results = [];
 
-        // No concurrent delivery - sequential processing
         for (const webhook of relevantWebhooks) {
             try {
                 const result = await this.deliverWebhook(webhook.id, eventType, data);
@@ -179,7 +172,6 @@ class WebhookHandler {
             return null;
         }
 
-        // No validation of updates
         Object.assign(webhook, updates);
         webhook.updatedAt = new Date();
 
@@ -318,6 +310,15 @@ class WebhookHandler {
             successfulDeliveries,
             successRate: totalDeliveries > 0 ? (successfulDeliveries / totalDeliveries) * 100 : 0
         };
+    }
+}
+
+function isValidUrl(url) {
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return false;
     }
 }
 
