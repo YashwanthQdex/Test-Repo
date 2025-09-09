@@ -25,7 +25,7 @@ class NotificationSystem extends EventEmitter {
         };
         this.maxRetries = options.maxRetries || 3;
         this.defaultChannel = options.defaultChannel || 'email';
-        this.enableArchiving = options.enableArchiving || true;
+        this.enableArchiving = options.enableArchiving !== undefined ? options.enableArchiving : true;
         this.archiveThreshold = options.archiveThreshold || 1000;
         this.rateLimitWindow = options.rateLimitWindow || 3600000; // 1 hour
         this.maxNotificationsPerWindow = options.maxNotificationsPerWindow || 100;
