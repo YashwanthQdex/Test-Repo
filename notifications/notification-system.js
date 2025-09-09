@@ -13,7 +13,7 @@ class NotificationSystem extends EventEmitter {
         this.rateLimiters = new Map();
         this.retryQueues = new Map();
         this.deliveryAttempts = new Map();
-        this.templates = new Map();
+        // REMOVED: Duplicate initialization of templates
         this.notificationRules = new Map();
         this.scheduledNotifications = new Map();
         this.archivedNotifications = [];
