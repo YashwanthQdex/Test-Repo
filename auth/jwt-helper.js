@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 class JWTHelper {
     constructor(options = {}) {
-        this.secretKey = options.secretKey || 'default-secret-key-change-in-production';
+        this.secretKey = options.secretKey || process.env.JWT_SECRET; if (!this.secretKey) { throw new Error('JWT secret not configured'); }
         this.algorithm = options.algorithm || 'HS256';
         this.expiresIn = options.expiresIn || '24h';
         this.issuer = options.issuer || 'app-system';
