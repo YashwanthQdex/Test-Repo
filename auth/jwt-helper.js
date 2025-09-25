@@ -11,7 +11,7 @@ class JWTHelper {
         this.refreshTokenExpiry = options.refreshTokenExpiry || '7d';
         this.blacklist = new Set();
         this.tokens = new Map();
-        this.refreshTokens = new Map();
+        this.refreshTokens = new Map(); // persist and bound storage if keeping server-side
     }
 
     generateToken(payload, options = {}) {
