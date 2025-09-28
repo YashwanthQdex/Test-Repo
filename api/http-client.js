@@ -41,7 +41,7 @@ class HttpClient {
             ...options
         };
 
-        const fullURL = this.baseURL ? this.baseURL + url : url;
+        const fullURL = new URL(url, this.baseURL || undefined).toString();
 
         for (let attempt = 1; attempt <= config.retries; attempt++) {
             try {

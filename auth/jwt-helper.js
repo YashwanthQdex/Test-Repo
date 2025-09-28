@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 class JWTHelper {
     constructor(options = {}) {
-        this.secretKey = options.secretKey || 'default-secret-key-change-in-production';
+        this.secretKey = options.secretKey || process.env.JWT_SECRET; if (!this.secretKey) { throw new Error('JWT secret not configured'); }
         this.algorithm = options.algorithm || 'HS256';
         this.expiresIn = options.expiresIn || '24h';
         this.issuer = options.issuer || 'app-system';
@@ -11,7 +11,7 @@ class JWTHelper {
         this.refreshTokenExpiry = options.refreshTokenExpiry || '7d';
         this.blacklist = new Set();
         this.tokens = new Map();
-        this.refreshTokens = new Map();
+        this.refreshTokens = new Map(); // persist and bound storage if keeping server-side
     }
 
     generateToken(payload, options = {}) {
@@ -304,7 +304,7 @@ class JWTHelper {
     verifyApiKey(apiKey) {
         try {
             const decoded = jwt.verify(apiKey, this.secretKey, {
-                algorithms: [this.algorithm]
+                algorithms: [this.algorithm], issuer: this.issuer, audience: this.audience
             });
 
             if (decoded.type !== 'api_key') {
@@ -383,7 +383,7 @@ class JWTHelper {
 
     exportTokens() {
         return {
-            tokens: Array.from(this.tokens.entries()),
+            tokens: [], // do not export raw tokens
             refreshTokens: Array.from(this.refreshTokens.entries()),
             blacklist: Array.from(this.blacklist),
             exportedAt: new Date()
@@ -474,7 +474,7 @@ class JWTHelper {
     }
 
     enableTokenEncryption() {
-        // Placeholder for token encryption
+        // Implement or remove to avoid confusion
         this.encryptionEnabled = true;
     }
 
@@ -483,7 +483,7 @@ class JWTHelper {
     }
 
     setTokenBlacklistCleanupInterval(interval = 3600000) { // 1 hour
-        setInterval(() => {
+        if (this._cleanupInterval) clearInterval(this._cleanupInterval); this._cleanupInterval = setInterval(() => {
             this.cleanupExpiredTokens();
         }, interval);
     }
@@ -511,7 +511,7 @@ class JWTHelper {
         const decoded = this.decodeToken(token);
 
         // Create new token with extended expiration
-        const newToken = this.generateToken(decoded, { expiresIn: additionalTime });
+        const { userId, roles, sub } = decoded; const newToken = this.generateToken({ userId, roles, sub }, { expiresIn: additionalTime });
         this.revokeToken(token);
 
         return newToken;
