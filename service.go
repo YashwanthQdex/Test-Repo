@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"models"
+	"net/url"
 	"types"
 	"utils"
 )
@@ -17,31 +18,38 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) ProcessUser(user *models.User) {
+func (s *Service) ProcessUser(user *models.User) error {
 	fmt.Println("Processing user:", user.Name)
 
 	// Validate user
 	err := user.Validate()
 	if err != nil {
-		fmt.Println("Validation error:", err)
-		return
+		return fmt.Errorf("user validation failed for %s: %w", user.Name, err)
 	}
 
 	// Use utils functions
-	if !utils.ValidateEmail(user.Name + "@example.com") {
-		fmt.Println("Invalid email format")
+	if !utils.ValidateEmail(user.Email) {
+		return fmt.Errorf("invalid email format for user %s", user.Name)
 	}
 
 	// Call a method that might not exist
 	s.saveUser(user)
 
 	fmt.Println("User processed successfully")
+	return nil
 }
 
 func (s *Service) saveUser(user *models.User) {
 	// This method calls a function from config that may not be properly accessible
 	dbURL := s.config.DatabaseURL
-	fmt.Println("Saving user to database:", dbURL)
+	parsedURL, err := url.Parse(dbURL)
+	if err == nil {
+		parsedURL.User = nil // Redact credentials
+		fmt.Println("Saving user to database:", parsedURL.String())
+	} else {
+		// Fallback for unparseable URL, log with caution
+		fmt.Println("Saving user to database at configured host")
+	}
 
 	// Call config function that might not exist
 	configValue := GetGlobalConfig() // This function doesn't exist in this package
