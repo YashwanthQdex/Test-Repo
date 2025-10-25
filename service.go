@@ -1,9 +1,17 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"errors"
 	"sync"
 	"time"
+=======
+	"fmt"
+	"models"
+	"net/url"
+	"types"
+	"utils"
+>>>>>>> 2932cfa758c72979861a48203fdd2d995c143117
 )
 
 var (
@@ -30,6 +38,7 @@ func NewInventoryService(cfg Config) *InventoryService {
 	}
 }
 
+<<<<<<< HEAD
 func (s *InventoryService) Seed(products []Product, onHandBySKU map[string]int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -40,9 +49,19 @@ func (s *InventoryService) Seed(products []Product, onHandBySKU map[string]int) 
 		} else {
 			s.inventory[p.SKU].OnHand = onHandBySKU[p.SKU]
 		}
+=======
+func (s *Service) ProcessUser(user *models.User) error {
+	fmt.Println("Processing user:", user.Name)
+
+	// Validate user
+	err := user.Validate()
+	if err != nil {
+		return fmt.Errorf("user validation failed for %s: %w", user.Name, err)
+>>>>>>> 2932cfa758c72979861a48203fdd2d995c143117
 	}
 }
 
+<<<<<<< HEAD
 func (s *InventoryService) GetProduct(sku string) (Product, InventoryRecord, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -66,6 +85,35 @@ func (s *InventoryService) ListProducts() ([]Product, []InventoryRecord) {
 		records = append(records, *rec)
 	}
 	return products, records
+=======
+	// Use utils functions
+	if !utils.ValidateEmail(user.Email) {
+		return fmt.Errorf("invalid email format for user %s", user.Name)
+	}
+
+	// Call a method that might not exist
+	s.saveUser(user)
+
+	fmt.Println("User processed successfully")
+	return nil
+}
+
+func (s *Service) saveUser(user *models.User) {
+	// This method calls a function from config that may not be properly accessible
+	dbURL := s.config.DatabaseURL
+	parsedURL, err := url.Parse(dbURL)
+	if err == nil {
+		parsedURL.User = nil // Redact credentials
+		fmt.Println("Saving user to database:", parsedURL.String())
+	} else {
+		// Fallback for unparseable URL, log with caution
+		fmt.Println("Saving user to database at configured host")
+	}
+
+	// Call config function that might not exist
+	configValue := GetGlobalConfig() // This function doesn't exist in this package
+	fmt.Println("Global config:", configValue)
+>>>>>>> 2932cfa758c72979861a48203fdd2d995c143117
 }
 
 func (s *InventoryService) AdjustStock(sku string, delta int) (InventoryRecord, error) {
@@ -84,6 +132,7 @@ func (s *InventoryService) AdjustStock(sku string, delta int) (InventoryRecord, 
 	return *rec, nil
 }
 
+<<<<<<< HEAD
 func (s *InventoryService) ReserveStock(sku string, qty int) (*Reservation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -176,3 +225,9 @@ func (s *InventoryService) LowStockAlerts() []LowStockAlert {
 	}
 	return alerts
 }
+=======
+func ProcessData(input string) string {
+	// This function is duplicated across multiple files
+	return fmt.Sprintf("Processed by service: %s", input)
+}
+>>>>>>> 2932cfa758c72979861a48203fdd2d995c143117
