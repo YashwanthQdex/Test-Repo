@@ -1,50 +1,41 @@
-package config
+package main
 
 import (
-	"fmt"
-	"main" // This creates a circular dependency: main imports handlers, handlers imports service, service imports utils, utils imports config, config imports main
+	"os"
+	"strconv"
+	"time"
 )
 
 type Config struct {
-	DatabaseURL string
-	Port        int
-	Debug       bool
+	Port              string
+	LowStockThreshold int
+	ReservationTTL    time.Duration
 }
 
-var globalConfig *Config
+func LoadConfig() Config {
+	port := getEnv("PORT", "8080")
+	threshold := parseIntEnv("LOW_STOCK_THRESHOLD", 5)
+	resTTLMins := parseIntEnv("RESERVATION_TTL_MINUTES", 30)
 
-func init() {
-	globalConfig = &Config{
-		DatabaseURL: "postgres://localhost/db",
-		Port:        8080,
-		Debug:       true,
+	return Config{
+		Port:              port,
+		LowStockThreshold: threshold,
+		ReservationTTL:    time.Duration(resTTLMins) * time.Minute,
 	}
 }
 
-func LoadConfig() *Config {
-	// This function is called from utils
-	fmt.Println("Loading configuration...")
-
-	// Call a function from main package - this creates circular dependency
-	appVersion := main.GetVersion() // This function doesn't exist in main package yet
-	fmt.Println("App version:", appVersion)
-
-	return globalConfig
-}
-
-func GetConfigValue(key string) string {
-	// This function is called from handlers but implemented here
-	switch key {
-	case "database_url":
-		return globalConfig.DatabaseURL
-	case "port":
-		return fmt.Sprintf("%d", globalConfig.Port)
-	default:
-		return "default_value"
+func getEnv(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
+	return def
 }
 
-func ProcessData(input string) string {
-	// This function is duplicated across multiple files
-	return fmt.Sprintf("Processed by config: %s", input)
+func parseIntEnv(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return def
 }

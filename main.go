@@ -2,25 +2,37 @@ package main
 
 import (
 	"fmt"
-	"handlers"
+	"log"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("Starting application...")
-	h := handlers.NewHandler()
-	h.HandleRequest("test data")
+	cfg := LoadConfig()
+	service := NewInventoryService(cfg)
+	seed(service)
 
-	// This function is repeated in multiple files
-	result := ProcessData("main input")
-	fmt.Println("Main result:", result)
+	mux := http.NewServeMux()
+	api := NewAPI(service)
+	api.RegisterRoutes(mux)
+
+	addr := ":" + cfg.Port
+	log.Printf("inventory service listening on %s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
+		log.Fatal(fmt.Errorf("server error: %w", err))
+	}
 }
 
-func GetVersion() string {
-	// This function is called from config package, creating circular dependency
-	return "1.0.0"
-}
-
-func ProcessData(input string) string {
-	// This function is duplicated across multiple files
-	return fmt.Sprintf("Processed by main: %s", input)
+func seed(s *InventoryService) {
+	products := []Product{
+		{SKU: "SKU-IPHONE-15", Name: "iPhone 15"},
+		{SKU: "SKU-PS5-DISC", Name: "PlayStation 5 (Disc)"},
+		{SKU: "SKU-NIKE-AF1", Name: "Nike Air Force 1"},
+	}
+	onHand := map[string]int{
+		"SKU-IPHONE-15": 25,
+		"SKU-PS5-DISC":  8,
+		"SKU-NIKE-AF1":  60,
+	}
+	// BUG: Seed is called but products may not be properly initialized
+	s.Seed(products, onHand)
 }
