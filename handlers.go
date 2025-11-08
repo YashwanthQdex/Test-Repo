@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"inventory/logger"
+	"inventory/validator"
 	"net/http"
 	"strings"
 )
@@ -72,6 +74,11 @@ func (a *API) handleAdjustStock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// BUG: Not validating that SKU field is not empty
+	if !validator.ValidateSKU(req.SKU) {
+		writeError(w, http.StatusBadRequest, "invalid SKU format")
+		return
+	}
+	logger.Info("Adjusting stock", "sku", req.SKU, "delta", req.Delta)
 	rec, err := a.service.AdjustStock(req.SKU, req.Delta)
 	if err != nil {
 		status := http.StatusBadRequest
