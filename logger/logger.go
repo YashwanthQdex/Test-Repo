@@ -69,28 +69,29 @@ var defaultConfig = LoggerConfig{
 }
 
 func init() {
-	setupFileLogging()
+	if err := setupFileLogging(); err != nil {
+		log.Printf("Error initializing logger: %v", err)
+	}
 }
 
-func setupFileLogging() {
+func setupFileLogging() error {
 	if !defaultConfig.EnableFileLog {
-		return
+		return nil
 	}
 	if err := os.MkdirAll(logDir, 0755); err != nil {
-		log.Printf("Failed to create log directory: %v", err)
-		return
+		return fmt.Errorf("failed to create log directory: %w", err)
 	}
 
 	logPath := filepath.Join(logDir, fmt.Sprintf("inventory-%s.log", time.Now().Format("2006-01-02")))
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Printf("Failed to open log file: %v", err)
-		return
+		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
 	logFile = file
 	logFileWriter = io.MultiWriter(os.Stdout, file)
 	enableFileLog = true
+	return nil
 }
 
 func Configure(config LoggerConfig) {
@@ -123,7 +124,9 @@ func Configure(config LoggerConfig) {
 	defaultConfig.EnableFileLog = config.EnableFileLog
 	
 	if enableFileLog {
-		setupFileLogging()
+		if err := setupFileLogging(); err != nil {
+			log.Printf("Error configuring file logging: %v", err)
+		}
 	}
 }
 
@@ -148,7 +151,9 @@ func SetLogDirectory(dir string) {
 	if logFile != nil {
 		logFile.Close()
 	}
-	setupFileLogging()
+	if err := setupFileLogging(); err != nil {
+		log.Printf("Error setting up file logging for new directory: %v", err)
+	}
 }
 
 func SetMaxFileSize(size int64) {
@@ -379,7 +384,9 @@ func rotateLogFileIfNeeded() {
 	if info.Size() >= maxFileSize {
 		logFile.Close()
 		rotateFiles()
-		setupFileLogging()
+		if err := setupFileLogging(); err != nil {
+			log.Printf("Error setting up new log file after rotation: %v", err)
+		}
 	}
 }
 
@@ -417,7 +424,7 @@ func Debug(msg string, args ...interface{}) {
 
 func Error(msg string, err error) {
 	if err != nil {
-		writeLog(LevelError, msg, "error", err.Error())
+		writeLog(LevelError, msg, "error", fmt.Sprintf("%+v", err))
 	} else {
 		writeLog(LevelError, msg)
 	}
